@@ -1,4 +1,4 @@
-# 1단계: 빌드 (Node.js 환경)
+# 1단계: 빌드
 FROM node:18-alpine AS build
 WORKDIR /app
 COPY package*.json ./
@@ -6,9 +6,14 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# 2단계: 실행 (Nginx 환경)
+# 2단계: 실행 (Nginx)
 FROM nginx:stable-alpine
-# CRA의 기본 빌드 폴더명은 'build'입니다. (Vite는 dist)
+
+# Nginx의 기본 설정을 덮어씁니다.
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# 빌드된 정적 파일 복사
 COPY --from=build /app/build /usr/share/nginx/html
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
